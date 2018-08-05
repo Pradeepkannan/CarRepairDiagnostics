@@ -1,14 +1,17 @@
 package com.ubiquisoft.evaluation;
 
-import com.ubiquisoft.evaluation.domain.Car;
-import com.ubiquisoft.evaluation.domain.ConditionType;
-import com.ubiquisoft.evaluation.domain.Part;
-import com.ubiquisoft.evaluation.domain.PartType;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.InputStream;
+
+import com.ubiquisoft.evaluation.domain.Car;
+import com.ubiquisoft.evaluation.domain.ConditionType;
+import com.ubiquisoft.evaluation.domain.Part;
+import com.ubiquisoft.evaluation.domain.PartType;
 
 public class CarDiagnosticEngine {
 
@@ -38,8 +41,43 @@ public class CarDiagnosticEngine {
 		 * Treat the console as information being read by a user of this application. Attempts should be made to ensure
 		 * console output is as least as informative as the provided methods.
 		 */
+		
+		System.out.println("Executing diagnosis steps one by one!");
+		
+		//Executing each diagnosis step one by one. Return if validation fails in a step.
+		
+		//Keeping the getDamagedParts and getMissingData methods at the Car class.
+		
+		//Step1: validating the data fields
+		List<String> missingData = car.getMissingData();
+		if(!missingData.isEmpty()) {
+			missingData.forEach(data -> printMissingData(data));
+			return;
+		}
+		
+		//Step2: Get Missing parts and print their details
+		Map<PartType, Integer> missingParts = car.getMissingPartsMap();
+		if(!missingParts.isEmpty()){
+			//Print each missing part's details.
+			missingParts.entrySet().forEach(entry-> printMissingPart(entry.getKey(), entry.getValue()));
+			return;
+		}
+		
+		//Step3: Get damaged parts and print their details
+		List<Part> damagedParts = car.getDamagedParts();
+		if(!damagedParts.isEmpty()) {
+			//Pring each damaged part's details
+			damagedParts.forEach(part -> printDamagedPart(part.getType(), part.getCondition()));
+			return;
+		}
+		
+		System.out.println("Car diagnostics success. Car is in good condition!");
+		
+	}
 
-
+	private void printMissingData(String data) {
+		if (data == null) throw new IllegalArgumentException("Data must not be null");
+		System.out.println(String.format("%s data is missing", data));
 	}
 
 	private void printMissingPart(PartType partType, Integer count) {
@@ -72,7 +110,7 @@ public class CarDiagnosticEngine {
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 
 		Car car = (Car) unmarshaller.unmarshal(xml);
-
+        
 		// Build new Diagnostics Engine and execute on deserialized car object.
 
 		CarDiagnosticEngine diagnosticEngine = new CarDiagnosticEngine();
